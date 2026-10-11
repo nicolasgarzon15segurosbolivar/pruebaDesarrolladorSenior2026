@@ -1,0 +1,87 @@
+### ============================================================
+### API de Gestion de Polizas - Peticiones de prueba
+### Requiere la extension "REST Client" (Huachao Mao) en Kiro/VS Code.
+### Da clic en "Send Request" (aparece encima de cada peticion).
+### Primero arranca la app:  mvn spring-boot:run
+### ============================================================
+
+# Variables reutilizables
+@host = http://localhost:8080
+@apiKey = 123456
+
+
+### 1. Listar TODAS las polizas
+GET {{host}}/polizas
+x-api-key: {{apiKey}}
+
+
+### 1b. Listar filtrando por tipo y estado
+GET {{host}}/polizas?tipo=COLECTIVA&estado=VIGENTE
+x-api-key: {{apiKey}}
+
+
+### Prueba de seguridad: SIN api-key (debe responder 401)
+GET {{host}}/polizas
+
+
+### Consultar una poliza por id
+GET {{host}}/polizas/1
+x-api-key: {{apiKey}}
+
+
+### 2. Consultar los riesgos de una poliza
+GET {{host}}/polizas/2/riesgos
+x-api-key: {{apiKey}}
+
+
+### 3. Renovar una poliza (incrementa canon + prima por IPC, estado RENOVADA)
+POST {{host}}/polizas/2/renovar
+x-api-key: {{apiKey}}
+
+
+### 3b. Renovar una poliza CANCELADA (debe responder 409)
+POST {{host}}/polizas/3/renovar
+x-api-key: {{apiKey}}
+
+
+### 5. Agregar un riesgo a una poliza COLECTIVA (debe responder 201)
+POST {{host}}/polizas/2/riesgos
+x-api-key: {{apiKey}}
+Content-Type: application/json
+
+{
+  "direccionInmueble": "Calle 50 #10-10, Bogota",
+  "arrendatario": "Sofia Perez"
+}
+
+
+### 5b. Agregar riesgo a una poliza INDIVIDUAL (debe responder 409)
+POST {{host}}/polizas/1/riesgos
+x-api-key: {{apiKey}}
+Content-Type: application/json
+
+{
+  "direccionInmueble": "Carrera 1 #1-1",
+  "arrendatario": "Pedro Gomez"
+}
+
+
+### 6. Cancelar un riesgo por id
+POST {{host}}/riesgos/3/cancelar
+x-api-key: {{apiKey}}
+
+
+### 4. Cancelar una poliza (cancela tambien todos sus riesgos)
+POST {{host}}/polizas/2/cancelar
+x-api-key: {{apiKey}}
+
+
+### Mock del CORE (obligatorio) - registra en logs el evento
+POST {{host}}/core-mock/evento
+x-api-key: {{apiKey}}
+Content-Type: application/json
+
+{
+  "evento": "ACTUALIZACION",
+  "polizaId": 555
+}
